@@ -1,0 +1,8 @@
+server:
+  port: 8380
+
+spring:
+  rabbitmq:
+    host: localhost
+    username: quest
+    password: quest
