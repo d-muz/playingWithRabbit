@@ -15,8 +15,8 @@ public class ProducerController {
 
     @PostMapping(value = "runningState")
     public void setProducerStatus(@RequestBody boolean state) {
-        producer.setRunning(state);
-        log.info("Producer state changed to: {}", producer.isRunning());
+        producer.setProducingEnabled(state);
+        log.info("Producer state changed to: {}", producer.isProducingEnabled());
     }
 
 }

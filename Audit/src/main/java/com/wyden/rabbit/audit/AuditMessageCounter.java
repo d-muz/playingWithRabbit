@@ -41,6 +41,14 @@ public class AuditMessageCounter {
             int outboundMessages,
             int certifiedMessages,
             int discardedMessages) {
+
+        public String toString() {
+            return String.format("INBOUND: %d, OUTBOUND: %d, CERTIFIED: %d, DISCARDED: %d",
+                    inboundMessages,
+                    outboundMessages,
+                    certifiedMessages,
+                    discardedMessages);
+        }
     }
 
 }

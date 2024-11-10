@@ -73,6 +73,7 @@ public class ProducerTest {
         when(messageSender.sendMessage(anyString(), anyString(), anyString()))
                 .thenReturn(getFuture());
 
+        producer.setProducingEnabled(true);
         producer.produce();
 
         Thread.sleep(500L);
@@ -93,6 +94,7 @@ public class ProducerTest {
         when(messageSender.sendMessage(anyString(), anyString(), anyString()))
                 .thenReturn(getAsyncFuture(timeOutInMillis));
 
+        producer.setProducingEnabled(true);
         producer.produce();
 
         Thread.sleep(timeOutInMillis + 500L);
@@ -111,6 +113,7 @@ public class ProducerTest {
         when(messageSender.sendMessage(anyString(), anyString(), anyString()))
                 .thenReturn(getAsyncFuture(4000));
 
+        producer.setProducingEnabled(true);
         producer.produce();
 
         Thread.sleep(timeOutInMillis + 500L);

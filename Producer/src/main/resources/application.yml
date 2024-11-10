@@ -8,6 +8,7 @@ spring:
     password: quest
 
 delayInMillis: 2000
+producing: false
 
 app:
   scheduling:

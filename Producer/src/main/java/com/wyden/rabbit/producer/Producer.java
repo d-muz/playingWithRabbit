@@ -6,6 +6,7 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.amqp.core.FanoutExchange;
 import org.springframework.amqp.rabbit.core.RabbitTemplate;
 import org.springframework.beans.factory.annotation.Qualifier;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Component;
 
@@ -25,7 +26,7 @@ public class Producer {
 
     @Getter
     @Setter
-    private boolean isRunning = true;
+    private boolean isProducingEnabled = false;
 
     @Getter
     @Setter
@@ -34,6 +35,7 @@ public class Producer {
     public Producer(@Qualifier("workInboundExchange") FanoutExchange exchangeInbound,
                     @Qualifier("certifiedResultExchange") FanoutExchange exchangeCertified,
                     @Qualifier("discardedResultExchange") FanoutExchange exchangeDiscarded,
+                    @Value("${producing:false}") boolean isProducingEnabled,
                     MessageSender<String> messageSender,
                     RabbitTemplate rabbitTemplate) {
         this.exchangeInbound = exchangeInbound;
@@ -41,11 +43,12 @@ public class Producer {
         this.exchangeDiscarded = exchangeDiscarded;
         this.messageSender = messageSender;
         this.rabbitTemplate = rabbitTemplate;
+        this.isProducingEnabled = isProducingEnabled;
     }
 
     @Scheduled(fixedRateString = "${delayInMillis}")
     public void produce() {
-        if (!isRunning) {
+        if (!isProducingEnabled) {
             return;
         }
 
