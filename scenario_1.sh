@@ -18,5 +18,9 @@ sleep 20
 #start producing
 curl -X 'POST' 'http://localhost:8180/runningState' -H 'accept: */*' -H 'Content-Type: application/json' -d 'true'
 
+sleep 30
+
+#stop producing
+curl -X 'POST' 'http://localhost:8180/runningState' -H 'accept: */*' -H 'Content-Type: application/json' -d 'false'
 
 #close current shell to close all services started in the background!
