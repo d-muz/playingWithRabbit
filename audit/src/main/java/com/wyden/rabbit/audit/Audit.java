@@ -17,29 +17,29 @@ public class Audit {
     @RabbitListener(queues = AUDIT_INBOUND_QUEUE_NAME)
     public void auditInbound(String message) {
         log.info("INBOUND: {}", message);
-        logStats();
         counter.incrementInboundMessages();
+        logStats();
     }
 
     @RabbitListener(queues = AUDIT_OUTBOUND_QUEUE_NAME)
     public void auditOutbound(String message) {
         log.info("OUTBOUND: {}", message);
-        logStats();
         counter.incrementOutboundMessages();
+        logStats();
     }
 
     @RabbitListener(queues = AUDIT_CERTIFIED_QUEUE_NAME)
     public void auditCertified(String message) {
         log.info("CERTIFIED: {}", message);
-        logStats();
         counter.incrementCertifiedMessages();
+        logStats();
     }
 
     @RabbitListener(queues = AUDIT_DISCARDED_QUEUE_NAME)
     public void auditDiscarded(String message) {
         log.info("DISCARDED: {}", message);
-        logStats();
         counter.incrementDiscardedMessages();
+        logStats();
     }
 
     private void logStats() {
