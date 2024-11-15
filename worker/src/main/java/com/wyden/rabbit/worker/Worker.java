@@ -9,7 +9,7 @@ import org.springframework.amqp.rabbit.core.RabbitTemplate;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.context.annotation.Configuration;
 
-import static com.wyden.rabbit.worker.WorkerCfg.WORKER_INBOUND_QUEUE_NAME;
+import static com.wyden.rabbit.RabbitConfig.WORKER_INBOUND_QUEUE_NAME;
 
 @Slf4j
 @Configuration
@@ -38,7 +38,7 @@ public class Worker {
     }
 
     @RabbitListener(queues = WORKER_INBOUND_QUEUE_NAME)
-    public String process(String message) {
+    public void process(String message) {
         try {
             Thread.sleep(timeDelayInSeconds * 1000L);
         } catch (InterruptedException e) {
@@ -52,8 +52,6 @@ public class Worker {
         log.info("Processing: {}", message);
         String result = message + "-processed";
         this.rabbitTemplate.convertAndSend(workOutboundExchange.getName(), "", result);
-        return result;
     }
-
 
 }

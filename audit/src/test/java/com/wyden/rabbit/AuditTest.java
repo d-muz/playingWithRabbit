@@ -4,7 +4,6 @@ import com.wyden.rabbit.audit.Audit;
 import com.wyden.rabbit.audit.AuditMessageCounter;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
-import org.springframework.amqp.rabbit.core.RabbitAdmin;
 import org.springframework.amqp.rabbit.core.RabbitTemplate;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
@@ -13,8 +12,6 @@ import org.springframework.test.context.DynamicPropertySource;
 import org.testcontainers.containers.RabbitMQContainer;
 import org.testcontainers.junit.jupiter.Container;
 import org.testcontainers.junit.jupiter.Testcontainers;
-
-import static com.wyden.rabbit.audit.AuditCfg.AUDIT_INBOUND_QUEUE_NAME;
 
 @SpringBootTest
 @Testcontainers

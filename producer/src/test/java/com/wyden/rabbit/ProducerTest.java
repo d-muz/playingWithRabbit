@@ -1,6 +1,5 @@
 package com.wyden.rabbit;
 
-import com.wyden.rabbit.producer.MessageSender;
 import com.wyden.rabbit.producer.Producer;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
@@ -36,9 +35,6 @@ public class ProducerTest {
     @Container
     static RabbitMQContainer rabbitContainer = new RabbitMQContainer("rabbitmq:3.7.25-management-alpine");
 
-    @MockBean
-    private MessageSender<String> messageSender;
-
     @Autowired
     @Qualifier("certifiedResultExchange")
     FanoutExchange exchangeCertified;
@@ -70,8 +66,8 @@ public class ProducerTest {
         int certifiedMessagesBeforeTest = initRabbitQueueAndBinding("test-certified", exchangeCertified);
         int discardedMessagesBeforeTest = initRabbitQueueAndBinding("test-discarded", exchangeDiscarded);
 
-        when(messageSender.sendMessage(anyString(), anyString(), anyString()))
-                .thenReturn(getFuture());
+//        when(messageSender.sendMessage(anyString(), anyString(), anyString()))
+//                .thenReturn(getFuture());
 
         producer.setProducingEnabled(true);
         producer.produce();
@@ -91,8 +87,8 @@ public class ProducerTest {
         int certifiedMessagesBeforeTest = initRabbitQueueAndBinding("test-certified", exchangeCertified);
         int discardedMessagesBeforeTest = initRabbitQueueAndBinding("test-discarded", exchangeDiscarded);
 
-        when(messageSender.sendMessage(anyString(), anyString(), anyString()))
-                .thenReturn(getAsyncFuture(timeOutInMillis));
+//        when(messageSender.sendMessage(anyString(), anyString(), anyString()))
+//                .thenReturn(getAsyncFuture(timeOutInMillis));
 
         producer.setProducingEnabled(true);
         producer.produce();
@@ -110,8 +106,8 @@ public class ProducerTest {
         int certifiedMessagesBeforeTest = initRabbitQueueAndBinding("test-certified", exchangeCertified);
         int discardedMessagesBeforeTest = initRabbitQueueAndBinding("test-discarded", exchangeDiscarded);
 
-        when(messageSender.sendMessage(anyString(), anyString(), anyString()))
-                .thenReturn(getAsyncFuture(4000));
+//        when(messageSender.sendMessage(anyString(), anyString(), anyString()))
+//                .thenReturn(getAsyncFuture(4000));
 
         producer.setProducingEnabled(true);
         producer.produce();

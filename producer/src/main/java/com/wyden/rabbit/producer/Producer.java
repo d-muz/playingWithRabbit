@@ -4,6 +4,7 @@ import lombok.Getter;
 import lombok.Setter;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.amqp.core.FanoutExchange;
+import org.springframework.amqp.rabbit.annotation.RabbitListener;
 import org.springframework.amqp.rabbit.core.RabbitTemplate;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.beans.factory.annotation.Value;
@@ -11,8 +12,8 @@ import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Component;
 
 import java.time.Instant;
-import java.util.concurrent.CompletableFuture;
-import java.util.concurrent.TimeUnit;
+
+import static com.wyden.rabbit.RabbitConfig.WORKER_OUTBOUND_QUEUE_NAME;
 
 @Slf4j
 @Component
@@ -21,7 +22,6 @@ public class Producer {
     private final FanoutExchange exchangeInbound;
     private final FanoutExchange exchangeCertified;
     private final FanoutExchange exchangeDiscarded;
-    private final MessageSender<String> messageSender;
     private final RabbitTemplate rabbitTemplate;
 
     @Getter
@@ -36,12 +36,10 @@ public class Producer {
                     @Qualifier("certifiedResultExchange") FanoutExchange exchangeCertified,
                     @Qualifier("discardedResultExchange") FanoutExchange exchangeDiscarded,
                     @Value("${producing:false}") boolean isProducingEnabled,
-                    MessageSender<String> messageSender,
                     RabbitTemplate rabbitTemplate) {
         this.exchangeInbound = exchangeInbound;
         this.exchangeCertified = exchangeCertified;
         this.exchangeDiscarded = exchangeDiscarded;
-        this.messageSender = messageSender;
         this.rabbitTemplate = rabbitTemplate;
         this.isProducingEnabled = isProducingEnabled;
     }
@@ -53,20 +51,12 @@ public class Producer {
         }
 
         String message = "" + Instant.now().getEpochSecond();
-        CompletableFuture<String> future = this.messageSender.sendMessage(exchangeInbound.getName(), "", message);
+        this.rabbitTemplate.convertAndSend(exchangeInbound.getName(), "", message);
         log.info("Producer: sent message {} to exchange {}", message, exchangeInbound.getName());
-        future.orTimeout(discardMessageTimeoutInSeconds, TimeUnit.SECONDS)
-            .whenComplete((result, ex) -> {
-                if (ex == null) {
-                    commitMessage(result);
-                } else {
-                    discardMessage(message);
-                }
-            });
-
     }
 
-    private void commitMessage(String message) {
+    @RabbitListener(queues = WORKER_OUTBOUND_QUEUE_NAME)
+    public void commitMessage(String message) {
         String certifiedMessage = message + "-certified";
         this.rabbitTemplate.convertAndSend(exchangeCertified.getName(), "", certifiedMessage);
         log.info("Message certified: {}", certifiedMessage);

@@ -19,6 +19,10 @@
 
     <dependencies>
         <dependency>
+            <groupId>wyden-rabbit</groupId>
+            <artifactId>rabbit-config</artifactId>
+        </dependency>
+        <dependency>
             <groupId>org.springframework.boot</groupId>
             <artifactId>spring-boot-starter-web</artifactId>
         </dependency>

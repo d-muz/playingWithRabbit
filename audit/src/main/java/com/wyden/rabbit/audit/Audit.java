@@ -5,7 +5,7 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.amqp.rabbit.annotation.RabbitListener;
 import org.springframework.stereotype.Component;
 
-import static com.wyden.rabbit.audit.AuditCfg.*;
+import static com.wyden.rabbit.RabbitConfig.*;
 
 @Slf4j
 @RequiredArgsConstructor
