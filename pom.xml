@@ -16,9 +16,9 @@
     <packaging>pom</packaging>
 
     <modules>
-        <module>producer</module>
-        <module>worker</module>
-        <module>audit</module>
+        <module>producer_mod</module>
+        <module>worker_mod</module>
+        <module>audit_mod</module>
     </modules>
 
     <properties>
