@@ -13,6 +13,8 @@ import org.testcontainers.containers.RabbitMQContainer;
 import org.testcontainers.junit.jupiter.Container;
 import org.testcontainers.junit.jupiter.Testcontainers;
 
+import static com.wyden.rabbit.RabbitConfig.*;
+
 @SpringBootTest
 @Testcontainers
 public class AuditTest {
@@ -39,7 +41,7 @@ public class AuditTest {
 
     @Test
     void testAuditInboundCounter() throws InterruptedException {
-        rabbitTemplate.convertAndSend("work-inbound", "", "INBOUND_MESSAGE");
+        rabbitTemplate.convertAndSend(WORK_INBOUND_EXCHANGE_NAME, "", "INBOUND_MESSAGE");
 
         Thread.sleep(1000);
         AuditMessageCounter.MessagesStats messagesStats = counter.getMessagesStats();
@@ -48,7 +50,7 @@ public class AuditTest {
 
     @Test
     void testAuditOutboundCounter() throws InterruptedException {
-        rabbitTemplate.convertAndSend("work-outbound", "", "OUTBOUND_MESSAGE");
+        rabbitTemplate.convertAndSend(WORK_OUTBOUND_EXCHANGE_NAME, "", "OUTBOUND_MESSAGE");
 
         Thread.sleep(1000);
         AuditMessageCounter.MessagesStats messagesStats = counter.getMessagesStats();
@@ -57,7 +59,7 @@ public class AuditTest {
 
     @Test
     void testAuditCertifiedCounter() throws InterruptedException {
-        rabbitTemplate.convertAndSend("certified-result", "", "CERTIFIED_MESSAGE");
+        rabbitTemplate.convertAndSend(CERTIFIED_RESULT_EXCHANGE_NAME, "", "CERTIFIED_MESSAGE");
 
         Thread.sleep(1000);
         AuditMessageCounter.MessagesStats messagesStats = counter.getMessagesStats();
@@ -66,7 +68,7 @@ public class AuditTest {
 
     @Test
     void testAuditDiscardedCounter() throws InterruptedException {
-        rabbitTemplate.convertAndSend("discarded-result", "", "DISCARDED_MESSAGE");
+        rabbitTemplate.convertAndSend(DEAD_LETTER_EXCHANGE_NAME, "", "DISCARDED_MESSAGE");
 
         Thread.sleep(1000);
         AuditMessageCounter.MessagesStats messagesStats = counter.getMessagesStats();

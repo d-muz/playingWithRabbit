@@ -13,25 +13,33 @@ public class RabbitConfig {
     public static final String WORKER_INBOUND_QUEUE_NAME = "worker-inbound";
     public static final String WORKER_OUTBOUND_QUEUE_NAME = "worker-outbound";
 
+    public static final int MESSAGE_TTL_IN_MILLIS = 10000;
+    public static final String DEAD_LETTER_EXCHANGE_NAME = "discarded-result";
+    public static final String WORK_INBOUND_EXCHANGE_NAME = "work-inbound";
+    public static final String WORK_OUTBOUND_EXCHANGE_NAME = "work-outbound";
+    public static final String CERTIFIED_RESULT_EXCHANGE_NAME = "certified-result";
+
+
     @Bean
     public FanoutExchange workInboundExchange() {
-        return new FanoutExchange("work-inbound");
+        return new FanoutExchange(WORK_INBOUND_EXCHANGE_NAME);
     }
 
     @Bean
     public FanoutExchange workOutboundExchange() {
-        return new FanoutExchange("work-outbound");
+        return new FanoutExchange(WORK_OUTBOUND_EXCHANGE_NAME);
     }
 
     @Bean
     public FanoutExchange certifiedResultExchange() {
-        return new FanoutExchange("certified-result");
+        return new FanoutExchange(CERTIFIED_RESULT_EXCHANGE_NAME);
     }
 
     @Bean
     public FanoutExchange discardedResultExchange() {
-        return new FanoutExchange("discarded-result");
+        return new FanoutExchange(DEAD_LETTER_EXCHANGE_NAME);
     }
+
 
     @Bean
     public Queue inboundAuditQueue() {
@@ -40,7 +48,11 @@ public class RabbitConfig {
 
     @Bean
     public Queue inboundWorkerQueue() {
-        return new Queue(WORKER_INBOUND_QUEUE_NAME);
+        return QueueBuilder.durable(WORKER_INBOUND_QUEUE_NAME)
+                .ttl(MESSAGE_TTL_IN_MILLIS)
+                .deadLetterExchange(DEAD_LETTER_EXCHANGE_NAME)
+                .deadLetterRoutingKey("")
+                .build();
     }
 
     @Bean

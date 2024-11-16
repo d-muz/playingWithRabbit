@@ -1,4 +1,4 @@
-package com.wyden.rabbit.config;
+package com.wyden.rabbit.producer;
 
 import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
 import org.springframework.context.annotation.Configuration;

@@ -6,3 +6,17 @@ spring:
     host: localhost
     username: quest
     password: quest
+
+    listener:
+      simple:
+        acknowledge-mode: manual
+        retry:
+          max-attempts: 5
+          max-interval: 1000
+        prefetch: 1
+      direct:
+        acknowledge-mode: manual
+        retry:
+          max-attempts: 5
+          max-interval: 1000
+        prefetch: 1

@@ -13,14 +13,14 @@ mvn spring-boot:run -f Worker/ -Dspring-boot.run.arguments=--server.port=8281 &
 mvn spring-boot:run -f Worker/ -Dspring-boot.run.arguments=--server.port=8282 &
 mvn spring-boot:run -f Worker/ -Dspring-boot.run.arguments=--server.port=8283 &
 
-#start producers (by default production is stopped
+#start producers - by default production is stopped
 mvn spring-boot:run -f Producer/ -Dspring-boot.run.arguments=--server.port=8180 &
 mvn spring-boot:run -f Producer/ -Dspring-boot.run.arguments=--server.port=8181 &
 mvn spring-boot:run -f Producer/ -Dspring-boot.run.arguments=--server.port=8182 &
 mvn spring-boot:run -f Producer/ -Dspring-boot.run.arguments=--server.port=8183 &
 
 #wait a while to start all services
-sleep 20
+sleep 40
 
 curl -X 'POST' 'http://localhost:8280/timeDelayInSeconds' -H 'accept: */*' -H 'Content-Type: application/json' -d '8'
 curl -X 'POST' 'http://localhost:8281/timeDelayInSeconds' -H 'accept: */*' -H 'Content-Type: application/json' -d '8'

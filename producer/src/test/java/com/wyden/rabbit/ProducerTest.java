@@ -3,16 +3,15 @@ package com.wyden.rabbit;
 import com.wyden.rabbit.producer.Producer;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
-import org.springframework.amqp.core.BindingBuilder;
 import org.springframework.amqp.core.FanoutExchange;
-import org.springframework.amqp.core.Queue;
-import org.springframework.amqp.rabbit.AsyncRabbitTemplate;
+import org.springframework.amqp.core.MessagePostProcessor;
 import org.springframework.amqp.rabbit.core.RabbitAdmin;
+import org.springframework.amqp.rabbit.core.RabbitTemplate;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.boot.test.autoconfigure.web.reactive.AutoConfigureWebTestClient;
 import org.springframework.boot.test.context.SpringBootTest;
-import org.springframework.boot.test.mock.mockito.MockBean;
+import org.springframework.boot.test.mock.mockito.SpyBean;
 import org.springframework.test.context.DynamicPropertyRegistry;
 import org.springframework.test.context.DynamicPropertySource;
 import org.springframework.test.context.TestPropertySource;
@@ -20,11 +19,10 @@ import org.testcontainers.containers.RabbitMQContainer;
 import org.testcontainers.junit.jupiter.Container;
 import org.testcontainers.junit.jupiter.Testcontainers;
 
-import java.time.Instant;
-import java.util.concurrent.CompletableFuture;
-
+import static com.wyden.rabbit.RabbitConfig.*;
+import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.anyString;
-import static org.mockito.Mockito.when;
+import static org.mockito.Mockito.*;
 
 @SpringBootTest
 @AutoConfigureWebTestClient
@@ -44,10 +42,14 @@ public class ProducerTest {
     FanoutExchange exchangeDiscarded;
 
     @Autowired
-    private RabbitAdmin rabbitAdmin;
+    @Qualifier("workInboundExchange")
+    FanoutExchange exchangeInbound;
 
     @Autowired
-    private AsyncRabbitTemplate asyncRabbitTemplate;
+    private RabbitAdmin rabbitAdmin;
+
+    @SpyBean
+    private RabbitTemplate rabbitTemplate;
 
     @Autowired
     private Producer producer;
@@ -61,83 +63,33 @@ public class ProducerTest {
     }
 
     @Test
-    void messageProduce_without_time_delay() throws InterruptedException {
+    void messageProduce() throws InterruptedException {
 
-        int certifiedMessagesBeforeTest = initRabbitQueueAndBinding("test-certified", exchangeCertified);
-        int discardedMessagesBeforeTest = initRabbitQueueAndBinding("test-discarded", exchangeDiscarded);
-
-//        when(messageSender.sendMessage(anyString(), anyString(), anyString()))
-//                .thenReturn(getFuture());
+        int inboundMessagesBeforeTest = rabbitAdmin.getQueueInfo(AUDIT_INBOUND_QUEUE_NAME).getMessageCount();
 
         producer.setProducingEnabled(true);
         producer.produce();
 
         Thread.sleep(500L);
-        Assertions.assertEquals(certifiedMessagesBeforeTest + 1,
-                rabbitAdmin.getQueueInfo("test-certified").getMessageCount());
-        Assertions.assertEquals(discardedMessagesBeforeTest,
-                rabbitAdmin.getQueueInfo("test-discarded").getMessageCount());
+        Assertions.assertEquals(inboundMessagesBeforeTest + 1,
+                rabbitAdmin.getQueueInfo(AUDIT_INBOUND_QUEUE_NAME).getMessageCount());
+
+        verify(rabbitTemplate, times(1))
+                .convertAndSend(eq(exchangeInbound.getName()), anyString(), anyString(), any(MessagePostProcessor.class));
+
     }
 
     @Test
-    void messageProduce_with_time_delay_lower_than_limit() throws InterruptedException {
-        int timeOutInMillis = 1000;
-        producer.setDiscardMessageTimeoutInSeconds(2);
+    void messageCertify() throws InterruptedException {
+        int certifiedMessagesBeforeTest =  rabbitAdmin.getQueueInfo(AUDIT_CERTIFIED_QUEUE_NAME).getMessageCount();
 
-        int certifiedMessagesBeforeTest = initRabbitQueueAndBinding("test-certified", exchangeCertified);
-        int discardedMessagesBeforeTest = initRabbitQueueAndBinding("test-discarded", exchangeDiscarded);
+        rabbitTemplate.convertAndSend(WORK_OUTBOUND_EXCHANGE_NAME, "", "INBOUND_MESSAGE");
 
-//        when(messageSender.sendMessage(anyString(), anyString(), anyString()))
-//                .thenReturn(getAsyncFuture(timeOutInMillis));
+        Thread.sleep(500L);
+        Assertions.assertEquals(certifiedMessagesBeforeTest + 1, rabbitAdmin.getQueueInfo(AUDIT_CERTIFIED_QUEUE_NAME).getMessageCount());
 
-        producer.setProducingEnabled(true);
-        producer.produce();
-
-        Thread.sleep(timeOutInMillis + 500L);
-        Assertions.assertEquals(certifiedMessagesBeforeTest + 1, rabbitAdmin.getQueueInfo("test-certified").getMessageCount());
-        Assertions.assertEquals(discardedMessagesBeforeTest, rabbitAdmin.getQueueInfo("test-discarded").getMessageCount());
+        verify(rabbitTemplate, times(1))
+                .convertAndSend(eq(exchangeCertified.getName()), anyString(), anyString());
     }
 
-    @Test
-    void messageProduce_with_time_delay_upper_than_limit() throws InterruptedException {
-        int timeOutInMillis = 3000;
-        producer.setDiscardMessageTimeoutInSeconds(2);
-
-        int certifiedMessagesBeforeTest = initRabbitQueueAndBinding("test-certified", exchangeCertified);
-        int discardedMessagesBeforeTest = initRabbitQueueAndBinding("test-discarded", exchangeDiscarded);
-
-//        when(messageSender.sendMessage(anyString(), anyString(), anyString()))
-//                .thenReturn(getAsyncFuture(4000));
-
-        producer.setProducingEnabled(true);
-        producer.produce();
-
-        Thread.sleep(timeOutInMillis + 500L);
-        Assertions.assertEquals(certifiedMessagesBeforeTest, rabbitAdmin.getQueueInfo("test-certified").getMessageCount());
-        Assertions.assertEquals(discardedMessagesBeforeTest + 1, rabbitAdmin.getQueueInfo("test-discarded").getMessageCount());
-    }
-
-    private int initRabbitQueueAndBinding(String queueName, FanoutExchange exchange) {
-        Queue certified = new Queue(queueName);
-        rabbitAdmin.declareQueue(certified);
-        rabbitAdmin.declareBinding(BindingBuilder.bind(certified).to(exchange));
-        return rabbitAdmin.getQueueInfo(certified.getName()).getMessageCount();
-    }
-
-    private CompletableFuture<String> getFuture() {
-        CompletableFuture<String> future = new CompletableFuture<>();
-        future.complete("value-processed");
-        return future;
-    }
-
-    private CompletableFuture<String> getAsyncFuture(long millis) {
-        return CompletableFuture.supplyAsync(() -> {
-            try {
-                Thread.sleep(millis);
-            } catch (InterruptedException e) {
-                throw new RuntimeException(e);
-            }
-            return Instant.now().getEpochSecond() + "-processed";
-        });
-    }
 }

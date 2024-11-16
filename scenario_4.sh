@@ -9,7 +9,7 @@ mvn spring-boot:run -f Audit/ -Dspring-boot.run.arguments=--server.port=8380 &
 #run worker
 mvn spring-boot:run -f Worker/ -Dspring-boot.run.arguments=--server.port=8280 &
 
-#start producers (by default production is stopped
+#start producers - by default production is stopped
 mvn spring-boot:run -f Producer/ -Dspring-boot.run.arguments=--server.port=8180 &
 
 #wait a while to start all services

@@ -9,16 +9,17 @@ mvn spring-boot:run -f Audit/ -Dspring-boot.run.arguments=--server.port=8380 &
 #run worker
 mvn spring-boot:run -f Worker/ -Dspring-boot.run.arguments=--server.port=8280 &
 
-#start producers (by default production is stopped
+#start producers - by default production is stopped
 mvn spring-boot:run -f Producer/ -Dspring-boot.run.arguments=--server.port=8180 &
 mvn spring-boot:run -f Producer/ -Dspring-boot.run.arguments=--server.port=8181 &
 mvn spring-boot:run -f Producer/ -Dspring-boot.run.arguments=--server.port=8182 &
 mvn spring-boot:run -f Producer/ -Dspring-boot.run.arguments=--server.port=8183 &
 
 #wait a while to start all services
-sleep 20
+sleep 30
 
-#start producing
+
+echo "Start producing"
 curl -X 'POST' 'http://localhost:8180/runningState' -H 'accept: */*' -H 'Content-Type: application/json' -d 'true'
 curl -X 'POST' 'http://localhost:8181/runningState' -H 'accept: */*' -H 'Content-Type: application/json' -d 'true'
 curl -X 'POST' 'http://localhost:8182/runningState' -H 'accept: */*' -H 'Content-Type: application/json' -d 'true'
